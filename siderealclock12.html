@@ -1,0 +1,241 @@
+<html lang="ja">
+ 
+<head>
+  <meta charset="utf-8">
+  <title>Sidereal Time Clock</title>
+  <style>
+canvas {
+  border: solid 1px #999;
+}
+  </style>
+</head>
+ 
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="500" height="500"></canvas> 
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+var alpha,beta,gamma;
+var dt,hr=0,mn=0,sec=0,ms=0,time=0,oldsec=0;
+var year=0,month=0,day=0;
+var ut,st,sh,sm,ss,fsh,fsm,fss;
+var running = true,waiting=false;
+var intervalID;
+var digitr=165;
+var mode=-1;
+function radians(d){return(d*Math.PI/180);}
+function frac(t){return(t-Math.floor(t));}
+function str(x) {return x<10?"0"+x:x;}
+hours=["0","1","2","3","4","5","6","7","8","9"];
+var image0=new Image();
+image0.src="northstar.png";
+<!--http://www.jodrellbank.net/wp-content/uploads/2014/10/-->
+<!--Make-a-planisphere.pdf-->
+function calc(){
+ ut=jd(year,month,day)+(hr-9+(mn+(sec+ms/1000)/60)/60)/24-0.5;
+ st=0.6712386796084648+(1.00273791 *(ut- 2440000.5))+9/24;
+ sh=frac(st)*24;
+ sm=frac(sh)*60;				      
+ ss=frac(sm)*60;
+ fsh=Math.floor(sh);
+ fsm=Math.floor(sm);
+ fss=Math.floor(ss);				      
+ alpha=sm*6+180;
+ beta=sh*30+180;
+ gamma=ss*6+180;}
+
+function stcalc(){
+ dt=new Date();
+ hr=dt.getHours();
+ mn=dt.getMinutes();
+ oldsec=sec;
+ sec=dt.getSeconds();
+ oldms=ms;
+ ms=dt.getMilliseconds();			       
+ year=dt.getFullYear();
+ month=dt.getMonth()+1;
+ day=dt.getDate();
+ calc();}
+
+function jd(y,m,d) {
+ var l=y%100==0?y%400==0:y%4==0;
+ return(y*365+Math.floor(y/4)-Math.floor(y/100)
+  +Math.floor(y/400)-Math.floor((489*(13-m)+26)/16)
+  -(m<3?(l?-1:-2):0)+d+1721426);}
+
+function hand(ang,d0,d1,y0,y1){
+  context.save();
+  context.rotate(radians(ang));
+  context.strokeStyle="#ffffff";
+  context.lineWidth=d0;
+  context.beginPath();
+  context.moveTo(0,y0);
+  context.lineTo(0,y1);
+  context.stroke();
+  context.strokeStyle="#000000";
+  context.lineWidth=d1;
+  context.beginPath();
+  context.moveTo(0,y0);
+  context.lineTo(0,y1);
+  context.stroke();
+  context.restore();}
+      
+function draw(){
+  if(running){stcalc();}
+  context.clearRect(0,0,500,500);
+  context.arc(250,250,190,0,Math.PI*2,true);
+  context.save();
+  context.clip();
+  context.save();
+  context.translate(250,250);
+  context.rotate(radians(sh*(-15)+90));
+  context.translate(-250,-250);
+  context.drawImage(image0,40,45.5,421,406);
+  context.translate(250,250);
+  context.fillStyle="#00ff00";
+  context.beginPath();
+  context.arc(134,0,2,0,Math.PI*2,true);
+  context.fill();
+  context.restore();
+  context.restore();
+  context.save();
+  context.translate(250,250);
+  context.strokeStyle="#000000";
+  context.beginPath();
+  context.arc(0,0,200,0,Math.PI*2,true);
+  context.arc(0,0,190,0,Math.PI*2,true);
+  context.stroke();
+  for(i=0;i<60;i++){
+    context.moveTo(0,190);
+    context.lineTo(0,200);
+    context.rotate(Math.PI/30);}
+  context.stroke();
+  context.beginPath();
+  context.lineWidth=3;
+  for(i=0;i<12;i++){
+    context.moveTo(0,190);
+    context.lineTo(0,200);
+    context.rotate(Math.PI/6);}
+  context.stroke();
+  context.lineWidth=1;	   
+  context.textAlign="center";
+  context.font="50px Courier";
+  context.fillStyle="#000000";
+  for(i=0;i<12;i++){				    
+    var ii=(sh>=i+6&&sh<i+18)||(sh<i-6)?i+12:i;
+    if(ii<10){
+      context.fillText(hours[ii],
+       digitr*Math.cos(Math.PI*(i-3)/6),
+       digitr*Math.sin(Math.PI*(i-3)/6)+15);}
+    else{
+      context.fillText(hours[Math.floor(ii/10)],
+       digitr*Math.cos(Math.PI*(i-3)/6)-12,
+       digitr*Math.sin(Math.PI*(i-3)/6)+15);
+      context.fillText(hours[ii%10],
+       digitr*Math.cos(Math.PI*(i-3)/6)+12,
+       digitr*Math.sin(Math.PI*(i-3)/6)+15);}}
+  hand(beta,10,8,0,130);  //hour hand
+  hand(alpha,7,5,0,160);  //min hand
+  hand(gamma,5,3,-40,180);//sec hand
+  context.fillStyle="#000000";      // center circle
+  context.beginPath();
+  context.arc(0,0,10,0,Math.PI*2,true);
+  context.fill();
+  context.restore();
+  context.font="30px Courier";
+  context.textAlign="center";
+  context.fillStyle="#000000";
+  context.fillText("Sidereal Time Clock",250,480);
+  context.fillText(
+    str(hr)+" "+str(mn)+" "+str(sec),400,60);
+  context.fillText(
+    (" "+(year+10000)).substring(2,6)+" "+str(month)+" "+str(day),400,30);
+ if(waiting && oldsec!=sec) {running=false;waiting=false;}
+ if(running) {
+   context.fillText(
+    str(fsh)+" "+str(fsm)+" "+str(fss),100,60);}
+ else
+  {context.fillText(
+    str(fsh)+" "+str(fsm)+" "+str(fss),100,30);
+   context.fillText(
+     Math.floor(frac(ss)*1000)/1000,100,60);
+   clearInterval(intervalID);}}
+
+function doKeyDown(evt){
+ if(running){running=false;clearInterval(intervalID);}
+ if(mode==-1){year=0;month=0;day=0;hr=0;mn=0;sec=0;ms=0;mode=0;}
+ ch=evt.keyCode;
+ if(ch==13||ch==32) {
+ switch(mode){
+ case 0:
+  if(year<1900||2100<=year){year=0;}
+  else{mode=1;}
+  break;
+ case 1:
+  if(month<1||12<month){month=0;}
+  else{mode=2;}
+  break;
+ case 2:
+  if(day<1||31<day){day=0;}
+  else{mode=3;}
+  break;
+ case 3:
+  if(hr<0||24<hr){hr=0;}
+  else{mode=4;}
+  break;
+ case 4:
+  if(mn<0||60<mn){mn=0;}
+  else{mode=5;}
+  break;
+ case 5:
+  if(sec<0||60<sec){sec=0;}
+  else{mode=-1;
+  calc();
+  break;} }}
+else if(48<=ch&&ch<58) {
+ switch(mode){
+ case 0:
+  year=(year*10+ch-48)%10000;
+  break;
+ case 1:
+  month=(month*10+ch-48)%100;
+  break;
+ case 2:
+  day=(day*10+ch-48)%100;
+  break;
+ case 3:
+  hr=(hr*10+ch-48)%100;
+  break;
+ case 4:
+  mn=(mn*10+ch-48)%100;
+  break;
+ case 5:
+  sec=(sec*10+ch-48)%100;
+  break;}}
+draw();}  
+
+function getPosition(event){mode=-1;
+  if(running){waiting=true;}
+  else{running=true;waigint=false;
+   intervalID=setInterval(draw,20);}}
+
+function initialize(){
+  var canvas = document.getElementById("mycanvas");
+  canvas.addEventListener("mousedown", getPosition, false);
+  window.addEventListener('keydown',doKeyDown,true);}
+
+initialize();
+intervalID=setInterval(draw,20);
+</script>
+</body>
+</html>
+
+<!--
+~/python/sidereal.py
+print(sidereal(2020,7,26,10,0,0))
+#[6, 17, 11, 0.5180982724996284]
+~/scheme/siderealtime.scm
+(st 2020 7 26 10 0 0)
+;(6 h 17 m 11.518098272499628 s)
+-->
