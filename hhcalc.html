@@ -1,0 +1,637 @@
+	<!DOCTYPE HTML>
+	<html>
+	<head>
+        <meta name="apple-mobile-web-app-capable" content="yes">
+	<style>
+	body {
+		margin: 0px;
+		padding: 0px;
+	}
+
+	.keyboard {
+		display: block;
+	}
+
+	.header {
+		width: 90vw;
+		display: flex;
+		margin: 0 auto;
+	}
+
+	.title {
+		width: 45vw;
+		height: 6vw;
+		font-size: 3.6vw;
+		float: left;
+		margin-top: 1vw;
+		padding-left: 1vw;
+		font-family: sans-serif;
+	}
+
+	.panel {
+		width: 45vw;
+		height: 4.5vw;
+		font-size: 3.6vw;
+		padding: 0.1vw;
+		float: right;
+		margin-top: 1vw;
+		margin-bottom: 1vw;
+		vertical-align: middle;
+		display: table-cell;
+		border: 0.5vw solid black;
+		text-align: right;
+		font-family: sans-serif, monospace;
+	}
+
+	.error {
+		float: right;
+		width: 0vw;
+		color: red;
+		margin-top: 0.5vw;
+		margin-left: 0.6vw;
+		font-size: 4.0vw;
+		font-family: sans-serif;
+		border: 1px dotted red;
+	}
+
+	.keys {
+		width: 90vw;
+		display: block;
+		margin: 0 auto;
+	}
+
+	.row {
+		height: 11vw;
+		margin-top: 0.2vw;
+		display: flex;
+	}
+
+	.spacer2 {
+		width: 1vw;
+	}
+
+	.spacer4 {
+		width: 2vw;
+	}
+	.vspacer {
+	        margin-top: 1vh;
+                margin-bottom: 5vh;
+	}
+
+  .key {
+		float: left;
+		width: 9vw;
+		height: 8vw;
+		margin-left: 1vw;
+		padding: 1vw;
+		border: 0.4vw solid black;
+		border-radius: 0.8vw;
+		font-size: 3.6vw;
+		font-family: sans-serif;
+		text-align: center;
+		vertical-align: middle;
+		background-color:lightgray;
+		color: black;
+	}
+
+	.keyOn {
+		float: left;
+		width: 9vw;
+		height: 8vw;
+		margin-left: 1vw;
+		padding: 1vw;
+		border: 0.4vw solid black;
+		border-radius: 0.8vw;
+		font-size: 3.6vw;
+		font-family: sans-serif;
+		text-align: center;
+		vertical-align: middle;
+		background-color:blue;
+		color: white;
+	}
+
+	</style>
+	</head>
+	<body>  <div class="vspacer">
+		<div class="keyboard">
+			<div class="header" id="header">
+				<div class="panel" id="panel"></div>
+				<div class="title" id="title">Happy Hacking Calculator</div>
+
+			</div>
+			<div class="keys" id="keys">
+				<div class="row">
+					<div class="key" id="num0">0</div>
+					<div class="key" id="num1">1</div>
+					<div class="key" id="num2">2</div>
+					<div class="key" id="num3">3</div>
+					<div class="spacer4"></div>
+					<div class="key" id="div">/</div>
+					<div class="key" id="hex">Hex</div>
+					<div class="key" id="pop">Pop</div>
+					<div class="key" id="sqt">Sqt</div>
+					<div class="spacer2"></div>
+				</div>
+				<div class="row">
+					<div class="key" id="num4">4</div>
+					<div class="key" id="num5">5</div>
+					<div class="key" id="num6">6</div>
+					<div class="key" id="num7">7</div>
+					<div class="spacer4"></div>
+					<div class="key" id="mul">*</div>
+					<div class="key" id="dec">Dec</div>
+					<div class="key" id="dup">Dup</div>
+					<div class="key" id="fct">Fct</div>
+					<div class="spacer2"></div>
+				</div>
+				<div class="row">
+					<div class="key" id="num8">8</div>
+					<div class="key" id="num9">9</div>
+					<div class="key" id="numA">A</div>
+					<div class="key" id="numB">B</div>
+					<div class="spacer4"></div>
+					<div class="key" id="minus">-</div>
+					<div class="key" id="oct">Oct</div>
+					<div class="key" id="exc">Exc</div>
+					<div class="key" id="pow">Pow</div>
+					<div class="spacer2"></div>
+				</div>
+				<div class="row">
+					<div class="key" id="numC">C</div>
+					<div class="key" id="numD">D</div>
+					<div class="key" id="numE">E</div>
+					<div class="key" id="numF">F</div>
+					<div class="spacer4"></div>
+					<div class="key" id="plus">+</div>
+					<div class="key" id="ent">Ent</div>
+					<div class="key" id="chs">Chs</div>
+					<div class="key" id="jd">JD</div>
+					<div class="spacer2"></div>
+
+				</div>
+			</div>
+                </div>
+		</div>
+	<script>
+	var current="";
+	var maxDigits=16;
+	var register=0;
+	var radix=10,disp;
+
+	var keyIds=[
+		"num0", "num1", "num2", "num3",
+		"num4", "num5", "num6", "num7",
+		"num8", "num9", "numA", "numB",
+		"numC", "numD", "numE", "numF"
+	];
+	var fncIds=[
+		"div", "hex", "pop", "sqt",
+		"mul", "dec", "dup", "fct",
+		"minus", "oct", "exc", "pow",
+		"plus", "ent", "chs", "jd"
+	];
+
+	function detectmobile() {
+		if( navigator.userAgent.match(/Android/i)
+			|| navigator.userAgent.match(/webOS/i)
+			|| navigator.userAgent.match(/iPhone/i)
+			|| navigator.userAgent.match(/iPad/i)
+			|| navigator.userAgent.match(/iPod/i)
+			|| navigator.userAgent.match(/BlackBerry/i)
+			|| navigator.userAgent.match(/Windows Phone/i)
+			){
+			return true;
+		}	else {
+			return false;
+		}
+	}
+
+	var isMobile=detectmobile();
+
+function touchs (s, f){
+document.getElementById(s).addEventListener("touchstart", f, false);}
+function moused (s, f){
+document.getElementById(s).addEventListener("mousedown", f, false);}
+
+if(isMobile)  {
+	window.scrollTo(0, 1);	// hide address bar
+	for(var i in keyIds) {
+		var keyId=keyIds[i];
+		var key=document.getElementById(keyId);
+		key.addEventListener('touchend', mouseup, false);
+	}
+touchs ("num0", num0);touchs ("num1", num1);
+touchs ("num2", num2);touchs ("num3", num3);
+touchs ("num4", num4);touchs ("num5", num5);
+touchs ("num6", num6);touchs ("num7", num7);
+touchs ("num8", num8);touchs ("num9", num9);
+touchs ("numA", numA);touchs ("numB", numB);
+touchs ("numC", numC);touchs ("numD", numD);
+touchs ("numE", numE);touchs ("numF", numF);
+
+	for(var i in fncIds) {
+		var keyId=fncIds[i];
+		var key=document.getElementById(keyId);
+		key.addEventListener('touchend', mouseup, false);
+	}
+touchs ("div", divide);touchs ("mul", multiply);
+touchs ("minus", minus);touchs ("plus", plus);
+touchs ("hex", hex);touchs ("dec", dec);
+touchs ("oct", oct);touchs ("ent", ent);
+touchs ("pop", pop);touchs ("dup", dup);
+touchs ("exc", exc);touchs ("chs", chs);
+touchs ("sqt", sqt);touchs ("fct", fct);
+touchs ("pow", pow);touchs ("jd", jd);
+
+}
+else {
+	for(var i in keyIds) {
+		var keyId=keyIds[i];
+		var key=document.getElementById(keyId);
+//		key.addEventListener('mousedown', mousedown, false);
+		key.addEventListener('mouseup', mouseup, false);
+		key.addEventListener('mouseout', mouseout, false);
+	}
+moused ("num0", num0);moused ("num1", num1);
+moused ("num2", num2);moused ("num3", num3);
+moused ("num4", num4);moused ("num5", num5);
+moused ("num6", num6);moused ("num7", num7);
+moused ("num8", num8);moused ("num9", num9);
+moused ("numA", numA);moused ("numB", numB);
+moused ("numC", numC);moused ("numD", numD);
+moused ("numE", numE);moused ("numF", numF);
+	for(var i in fncIds) {
+		var keyId=fncIds[i];
+		var key=document.getElementById(keyId);
+		key.addEventListener('mouseup', mouseup, false);
+		key.addEventListener('mouseout', mouseout, false);
+	}
+moused ("div", divide);moused ("mul", multiply);
+moused ("minus", minus);moused ("plus", plus);
+moused ("hex", hex);moused ("dec", dec);
+moused ("oct", oct);moused ("ent", ent);
+moused ("pop", pop);moused ("dup", dup);
+moused ("exc", exc);moused ("chs", chs);
+moused ("sqt", sqt);moused ("fct", fct);
+moused ("pow", pow);moused ("jd", jd);}
+
+function color_radix(){
+function color_key (s, c){
+document.getElementById(s).setAttribute("style", c);}
+color_key ("hex", radix==16? "color:green" : "color:black");
+color_key ("dec", radix==10? "color:green" : "color:black");
+color_key ("oct", radix== 8? "color:green" : "color:black");}
+
+function color_error(){
+function color_key (s, c){
+document.getElementById(s).setAttribute("style", c);}
+color_key ("div", errorflag==0? "color:red" : "color:black");
+color_key ("sqt", errorflag==1? "color:red" : "color:black");
+color_key ("fct", errorflag==2? "color:red" : "color:black");
+color_key ("pow", errorflag==3? "color:red" : "color:black");
+errorflag=-1;}
+
+	color_radix();
+
+
+// for iPhone
+
+	var elm = document.body; // or some selection of the element you want to disable
+
+	var catcher = function(evt) {
+	    if (evt.touches.length < 2)
+	        evt.preventDefault();
+	};
+
+	elm.addEventListener('touchstart', catcher, true);
+
+	function mousedown (e) {
+		var button=e.target;
+		var c=button.className;
+		if(c === "key") {
+			button.className = "keyOn";
+			var id=button.id;
+			var s=id.substr(3,1);
+			current+=s;
+			if(current.length>maxDigits) {
+				current=current.substr(1);
+			}
+			document.getElementById('panel').innerHTML=current;
+		}
+	}
+
+	function mouseup (e) {
+		var button=e.target;
+		var c=button.className;
+		if(c === "keyOn") {
+			button.className = "key";
+		}
+	}
+
+	function mouseout (e) {
+		var button=e.target;
+		var c=button.className;
+		if(c === "keyOn") {
+			button.className = "key ";
+		}
+	}
+
+function nums (e, n){
+var button=e.target;
+button.className = "keyOn";
+errorflag=-1;
+if(ex==1){ex=0;ix=incc(ix);reg=[0,0];}
+else{reg=stack[ix];}
+r0=reg[0];r1=reg[1];b0=0;b1=radix;a0=0;a1=0;mul2();
+a0=r0;a1=r1;b0=0;b1=n;add2();
+stack[ix]=[a0,a1];
+var disp = regdisplay();
+document.getElementById('panel').innerHTML=disp;
+color_error();
+}
+function num0 (e) {nums(e, 0);}function num1 (e) {nums(e, 1);}
+function num2 (e) {nums(e, 2);}function num3 (e) {nums(e, 3);}
+function num4 (e) {nums(e, 4);}function num5 (e) {nums(e, 5);}
+function num6 (e) {nums(e, 6);}function num7 (e) {nums(e, 7);}
+function num8 (e) {nums(e, 8);}function num9 (e) {nums(e, 9);}
+function numA (e) {nums(e, 10);}function numB (e) {nums(e, 11);}
+function numC (e) {nums(e, 12);}function numD (e) {nums(e, 13);}
+function numE (e) {nums(e, 14);}function numF (e) {nums(e, 15);}
+
+var sl=16,rx=10;
+var register = 0;
+var ix=15,jx,kx,ex=1;
+var stack = new Array (sl);
+var start=false;
+var fl = new Array (485);
+var errorflag=-1;
+document.getElementById('panel').innerHTML="0";
+var p32=Math.pow(2,32);   //64 bit arithmetic
+var p31=Math.pow(2,31);
+var a0,a1,b0,b1,carry,neg,r0,r1,m0,m1;
+function add2() {   //add [a0,a1]+[b0,b1]->[a0,a1]
+var s0,s1;neg=((a0>>31)&1)^((b0>>31)&1);
+s1=(a1+b1)%p32;
+s0=a0+b0+Math.floor((a1+b1)/p32);
+carry=Math.floor(s0/p32);
+if(neg==1){neg=1-carry;}else{neg=(a0>>31)&1;}
+a0=s0%p32;
+a1=s1;}
+function sub2(a,b){   //sub [a0,a1]-[b0,b1]->[a0,a1]
+var d0,d1;neg=((a0>>31)&1)^((b0>>31)&1);
+d1=(p32+a1-b1)%p32;
+d0=(p32+a0-b0-1+Math.floor((p32+a1-b1)/p32));
+carry=1-Math.floor(d0/p32);
+if(neg==1){neg=(a0>>31)&1;}else{neg=carry;}
+a0=d0%p32;
+a1=d1;}
+function rshift(){   //rshift [a0,a1,r0,r1]>>1
+r1=Math.floor(r1/2)+(r0&1)*p31;
+r0=Math.floor(r0/2)+(a1&1)*p31;
+a1=Math.floor(a1/2)+(a0&1)*p31;
+a0=Math.floor(a0/2)+neg*p31;}
+function lshift(){   //lshift [a0,a1,r0,r1]<<1
+a0=(a0&0x7FFFFFFF)*2+((a1>>31)&1);
+a1=(a1&0x7FFFFFFF)*2+((r0>>31)&1);
+r0=(r0&0x7FFFFFFF)*2+((r1>>31)&1);
+r1=(r1&0x7FFFFFFF)*2;}
+function rlshift(){  //rlshift [r0,r1]>>1
+r0=(r0&0x7FFFFFFF)*2+((r1>>31)&1);
+r1=(r1&0x7FFFFFFF)*2;}
+function alshift2(){  //alshift2 [a0,a1]<<2 used by sqrt
+a0=(a0&0x3FFFFFFF)*4+((a1>>30)&3);
+a1=(a1&0x3FFFFFFF)*4;}
+
+function mul2(){   //mul [r0,r1]*[b0,b1]->[a0,a1,r0,r1]
+for(i=0;i<63;i++){
+if(r1&1==1) {add2();rshift();}
+else{rshift();}}
+if(r1&1==1) {sub2();}
+rshift();}
+function div2(){   //div [a0,a1,r0,r1]/[b0,b1]->quo[r0,r1],rem[a0,a1]
+if(((a0>>31)&1)^((b0>>31)&1)==1){add2();}else{sub2();}
+//overflowtest
+for(i=0;i<64;i++){
+if(((a0>>31)&1)^((b0>>31)&1)==1){lshift();add2();}
+else{lshift();sub2();r1=r1+1;}}
+if(((a0>>31)&1)^((b0>>31)&1)==1){add2();rlshift();}
+else{rlshift();r1=r1+1;}}
+
+var i=13,j=11,k=4;
+fl[0]=1;fl[1]=2;fl[2]=2;fl[3]=4;
+for(i=13;k<485;i=i+2){
+if((i%3)*(i%5)*(i%7)*(i%11)){fl[k]=i-j;j=i;k++;}}
+for(i=0;i<sl;i++){stack[i]=[0,0];start=true;}
+ex=1;
+
+function loada(x){a0=stack[x][0];a1=stack[x][1];}
+function loadb(x){b0=stack[x][0];b1=stack[x][1];}
+function loadr(x){r0=stack[x][0];r1=stack[x][1];}
+function storea(x){stack[x][0]=a0;stack[x][1]=a1;}
+function storer(x){stack[x][0]=r0;stack[x][1]=r1;}
+
+function decc(i){return((i+sl-1)%sl);}
+function incc(i){return((i+1)%sl);}
+
+var digits=new Array
+("0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F");
+
+function regdisplay() {//alert(errorflag);
+var disp ="";
+function regpr() {
+b0=0;b1=radix;
+while(r0!=0||r1!=0){a0=0;a1=0;div2();
+disp=digits[a1]+disp;}
+document.getElementById('panel').innerHTML=disp;}
+
+r0=stack[ix][0];r1=stack[ix][1];
+if(r0==0&&r1==0){disp="0";}
+else{if((((r0&p31)>>31)&1)==1){a0=0;a1=0;b0=r0;b1=r1;sub2();r0=a0;r1=a1;
+regpr();disp="-"+disp;}
+else{regpr();}}
+return(disp);}
+
+regdisplay();
+
+function begincom (e) {
+var button=e.target;
+button.className = "keyOn";
+errorflag=-1;}
+
+function endcom (s) {//alert(errorflag);
+ex=1;
+var disp=regdisplay();
+document.getElementById('panel').innerHTML=disp;
+color_error();}
+function divide (e) {
+begincom (e);
+jx=decc(ix);
+loadr(jx);loadb(ix);   //b divisor  ar dividend
+if(b0!=0||b1!=0){
+if(((r0>>31)&1)==1){a0=0xffffffff;a1=0xffffffff;}
+else{a0=0;a1=0;}
+div2();
+storea(jx);storer(ix);}
+else{errorflag=0;}
+endcom ("Divide");}
+function multiply (e) {
+begincom (e);
+jx=decc(ix);
+a0=0;a1=0;
+loadr(jx);loadb(ix);mul2();
+storer(jx);stack[ix]=[0,0];ix=jx;
+endcom ("Multiply");}
+function minus (e) {
+begincom (e);
+jx=decc(ix);loada(jx);loadb(ix);sub2();storea(jx);stack[ix]=[0,0];
+ix=jx;
+endcom ("Minus");}
+function plus (e) {
+begincom (e);
+jx=decc(ix);loada(jx);loadb(ix);add2();storea(jx);stack[ix]=[0,0];
+ix=jx;
+endcom ("Plus");}
+function hex (e) {
+begincom (e);
+radix=16;
+var disp = register.toString(radix).toUpperCase();
+document.getElementById('panel').innerHTML=disp;
+color_radix();
+endcom ("Hex");}
+function dec (e) {
+begincom (e);
+radix=10;
+var disp = register.toString(radix).toUpperCase();
+document.getElementById('panel').innerHTML=disp;
+color_radix();
+endcom ("Dec");}
+function oct (e) {
+begincom (e);
+radix=8;
+var disp = register.toString(radix).toUpperCase();
+document.getElementById('panel').innerHTML=disp;
+color_radix();
+endcom ("Oct");}
+function ent (e) {
+begincom (e);
+endcom ("Ent");}
+function pop (e) {
+begincom (e);
+stack[ix]=[0,0];ix=decc(ix);
+endcom ("Pop");}
+function dup (e) {
+begincom (e);
+jx=incc(ix);stack[jx]=stack[ix];ix=jx;
+endcom ("Dup");}
+function exc (e) {
+begincom (e);
+var ss=stack[ix];jx=decc(ix);stack[ix]=stack[jx];stack[jx]=ss;
+endcom ("Exc");}
+function chs (e) {
+begincom (e);
+a0=0;a1=0;loadb(ix);sub2();storea(ix);
+endcom ("Chs");}
+function sqt (e) {
+begincom (e);
+loada(ix);
+var q0=0,q1=0,n0=a0,n1=a1,p0,p1;
+if(((n0>>31)&1)==0)
+{for(s=31;s>=0;s--){a0=q0;a1=q1;alshift2();b0=0;b1=1;add2();
+for(i=0;i<s;i++){alshift2();}p0=a0;p1=a1;
+a0=n0;a1=n1;b0=p0;b1=p1;sub2();
+if(((a0>>31)&1)==0){n0=a0;n1=a1;a0=q0;a1=q1;b0=q0;b1=q1;add2();b0=0;b1=1;
+add2();q0=a0;q1=a1;}
+else{a0=q0;a1=q1;r0=0;lshift();q0=a0;q1=a1;}}
+r0=n0;r1=n1;storer(ix);jx=incc(ix);
+storea(jx);ix=jx;}
+else{errorflag=1;}
+endcom ("Sqt");}
+function fct (e) {
+begincom (e);
+loada(ix);
+var n0=a0,n1=a1,d0=0,d1=2,i=0,c=0,rm0,rm1;
+if((((n0>>31)&1)==0)&&((n0!=0)||((n0==0)&&(n1>=2)))){   //if(n>=2)
+jx=incc(ix);kx=incc(jx);
+while(1){
+a0=0;a1=0;r0=n0;r1=n1;b0=d0;b1=d1;div2();rm0=a0;rm1=a1;  //n/d->q,rm
+a0=r0;a1=r1;b0=d0;b1=d1;sub2();if(((a0>>31)&1)==1){ //q<d (n,1,1)
+a0=n0;a1=n1;storea(kx);stack[jx]=[0,1];stack[ix]=[0,1];break;}
+if((rm0==0)&&(rm1==0)){   //r=0
+while(1){
+r0=n0;r1=n1;a0=0;a1=0;b0=d0;b1=d1;div2();   //n/r->n,rm
+if((a0==0)&&(a1==0)){n0=r0;n1=r1;c++;}else{break;}}
+a0=d0;a1=d1;storea(kx);a0=0;a1=c;storea(jx);a0=n0;a1=n1;storea(ix);break;}
+if(i==485){i=5;d1=d1+fl[i];i++;}
+else{d1=d1+fl[i];i++;}}
+ix=kx;}
+else{errorflag=2;}
+endcom ("Fct");}
+function pow (e) {
+begincom (e);
+loada(ix);jx=decc(ix);loadb(jx);
+var y0=a0,y1=a1,x0=b0,x1=b1,z0=0,z1=1;
+if (((((y0>>31)&1)==0)&&((y0!=0)||(y1!=0)))||
+      ((y0==0)&&(y1==0)&&((x0!=0)||(x1!=0)))) {
+while((y0!=0)||(y1!=0)){
+if((y1&1)==1){r0=z0;r1=z1;b0=x0;b1=x1;a0=0;a1=0;mul2();
+z0=r0;z1=r1;
+a0=y0;a1=y1;b0=0;b1=1;sub2();y0=a0;y1=a1;}
+a0=y0;a1=y1;rshift();y0=a0;y1=a1;
+r0=x0;r1=x1;b0=x0;b1=x1;a0=0;a1=0;mul2();
+x0=r0;x1=r1;}  //while end
+a0=z0;a1=z1;storea(jx);stack[ix]=[0,0];ix=jx;}
+else{errorflag=3;}
+endcom ("Pow");}
+function jd (e) {
+begincom (e);
+loada(ix);
+function eq(s0,s1){
+a0=s0[0];a1=s0[1];b0=s1[0];b1=s1[1];sub2();
+return((a0==0)&&(a1==0));}
+function gt(s0,s1){
+a0=s1[0];a1=s1[1];b0=s0[0];b1=s0[1];sub2();
+return(((a0>>31)&1)==1);}
+function quo(n,d){
+r0=n[0];r1=n[1];if(((r0>>31)&1)==1){a0=0xffffffff;}else{a0=0;}
+a1=a0;b0=d[0];b1=d[1];div2();
+return([r0,r1]);}
+function mod(n,d){
+r0=n[0];r1=n[1];if(((r0>>31)&1)==1){a0=0xffffffff;}else{a0=0;}
+a1=a0;b0=d[0];b1=d[1];div2();
+return([a0,a1]);}
+function mul(a,b){
+a0=0;a1=0;r0=a[0];r1=a[1];b0=b[0];b1=b[1];mul2();
+return([r0,r1]);}
+function add(a,b){
+a0=a[0];a1=a[1];b0=b[0];b1=b[1];add2();return([a0,a1]);}
+function sub(a,b){
+a0=a[0];a1=a[1];b0=b[0];b1=b[1];sub2();return([a0,a1]);}
+var m0=mod([a0,a1],[0,10000]),m1;
+var y0=r0,y1=r1;
+var d0=mod(m0,[0,100]),d1;
+m0=r0,m1=r1;
+d1=d0[1],d0=d0[0];
+function p(n){
+var n0=n[0],n1=n[1];
+var r=mod([y0,y1],[n0,n1]);return(r[0]==0&&r[1]==0);}
+function q(n){
+var n0=n[0],n1=n[1];
+var q=quo([y0,y1],[n0,n1]);return(q);}
+function mm(l){return(
+sub(quo(add(mul([0,489],sub([0,13],[m0,m1])),[0,26]),[0,16]),
+gt([0,3],[m0,m1])?(l?[0,1]:[0,2]):[0,0]));}
+
+if(gt([y0,y1],[0,1582])||
+(eq([y0,y1],[0,1582])&&(gt([m0,m1],[0,10])||
+(eq([m0,m1],[0,10])&&gt([d0,d1],[0,10]))))){
+y0=add(add(sub(add(sub(add(mul([y0,y1],[0,365]),q([0,4])),
+q([0,100])),q([0,400])),mm(p([0,100])?p([0,400]):p([0,4]))),
+[d0,d1]),[0,1721426]);
+}else{
+y0=add(sub(add(mul(add([y0,y1],[0,4713]),[0,365]),
+quo(add([y0,y1],[0,4716]),[0,4])),mm(p([0,4]))),[d0,d1]);
+}
+a1=y0[1];a0=y0[0];storea(ix);
+endcom ("JD");}
+	</script>
+</html>
