@@ -1,0 +1,360 @@
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>PC-1 simulator</title>
+  <style>
+  canvas {
+   border: solid 1px #999;}
+  </style>
+</head>
+ 
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="600" height="400"></canvas> 
+  <script src="e1000data2.js"></script>
+  <script src="pc1.js"></script>
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+var intervalID0=0,intervalID1=0,intervalID2=0,intervalID3=0;
+var intervalID4=0,intervalID5=0,intervalID6=0,intervalID7=0;
+var trace=0;var printcase=0;var enqtape=0;
+var e1000p=false,pi1000p=false; var runready=false,stateready=false;
+var dt=new Date(); var nw=dt.getTime();
+var setn=1,reptn=10;
+var initstate=0;tapei=0;var running=0;
+function run(){dt=new Date();nw=dt.getTime();
+intervalID0=setInterval(draw,10);
+if(setn>1){intervalID1=setInterval(draw,1);}
+if(setn>2){intervalID2=setInterval(draw,1);}
+if(setn>3){intervalID3=setInterval(draw,1);}
+intervalID4=setInterval(draw,1);
+intervalID5=setInterval(draw,1);
+intervalID6=setInterval(draw,1);
+intervalID7=setInterval(draw,1);
+}
+function halt(){dt=new Date();monito((dt.getTime()-nw)/1000);
+clearInterval(intervalID0);
+if(setn>1){clearInterval(intervalID1);}
+if(setn>2){clearInterval(intervalID2);}
+if(setn>3){clearInterval(intervalID3);}
+clearInterval(intervalID4);
+clearInterval(intervalID5);
+clearInterval(intervalID6);
+clearInterval(intervalID7);
+}
+function char(n){return(String.fromCharCode(n));}
+function code(c){return(c.charCodeAt(0));}
+function hex(n){return n.toString(16);}
+function chararray(str){
+ var temp=[];
+ for(i=0;i<str.length;i++){temp.push(str[i]);}
+ return temp;}	   
+var ita=chararray(
+ "\000t\015o\040hnm\012lrgipcvezdbsyfxawj\000uqk\000"+
+ "\0074-8  ,.+ 3 79 :2    5 =01  6  \177");
+var itb=chararray(
+ "\000T\015O\040HNM\012LRGIPCVEZDBSYFXAWJ\000UQK\000"+
+ "\0074-8  ,.+ 3 79 :2    5 =01  6  \177");
+
+var time=0;tape=0;ch=0;
+var ir=0,scc=0,a0=0,a1=0,m0=0,m1=0,r0=0,r1=0;
+var mem = Array(512);for(i=0;i<512;i++){mem[i]=0;}
+var page = Array(20);for(i=0;i<20;i++){page[i]="";}
+var switcha=[0,0,0,0,0,0,0,0,0];
+var switchx=440,switchy=175;ptrx=20,ptry=330;
+var ttyx=10,ttyy=10;
+
+function disptitle(){
+ context.clearRect(438,5,154,162);
+ context.font = "18px Courier";
+ context.fillStyle = "#008b00";
+ context.textAlign="center";
+ context.fillText("Parametron",515,40); 
+ context.fillText("Computer",515,70); 
+ context.fillText("1958 - 1964",515,130); 
+ context.fillStyle = "#ee9a00";
+ context.fillText("PC-1",515,100);} 	     
+function disptape(i,tape){
+ context.clearRect(ptrx,ptry,400,50);
+ for(j=0;j<Math.min(80,tape.length-i);j++){dispcol(j,tape[j+i]);}}
+var codetab=
+[0,0,0,0,0,0,0,0, 0,0,8,0,0,2,0,0, 0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+ 4,0,0,0,0,0,0,0, 0,0,0,40,38,34,39,0, 56,57,48,42,33,53,60,44,
+ 35,45,47,0,0,55,0,0, 0,0,0,0,0,0,0,0, 0,0,8,0,0,0,0,0, 0,0,0,0,0,0,0,0,
+ 0,0,8,0,0,0,0,0, 0,24,19,14,18,16,22,11, 5,12,26,30,9,7,6,3,
+ 13,29,10,20,1,28,15,25,23,21,17,0,0,0,0,0];
+
+function disppage(){
+ context.clearRect(ttyx,ttyy,424,245);
+ context.font = "11.69px Courier";
+ context.fillStyle = "#000000";
+ context.textAlign="left";
+ for(i=0;i<20;i++){
+  context.fillText(page[i],ttyx,ttyy+(20-i)*12);}}
+function preparetape(tape) {
+    var newtape=[];disptitle();switchnames();
+ for(i=0;i<tape.length;i++){
+  var ch=code(tape[i]);
+  if(ch==10){newtape.push(codetab[13]);}
+  newtape.push(codetab[ch]);}
+ disptape(0,newtape);tapei=0;return newtape;}
+
+function tty(c) {
+ function lf(){
+  for(i=18;i>=0;i--){page[i+1]=page[i];}
+  page[0]="";}
+ if(c=="\015"){page[0]=page[0];}
+ else if(c=="\012"){lf();disppage();}
+ else{if(page[0].length==60){lf();}
+  page[0]=page[0].concat(c);}
+  disppage();}
+
+function dispswitch(){
+ for(i=0;i<3;i++){for(j=0;j<3;j++){	     
+  if(switcha[i*3+j]==1){context.fillStyle = "#00ff00";}
+  else{context.fillStyle = "#ffffff";}
+  context.fillRect(60*i+switchx,80*j+switchy,30,40);}}
+ for(i=0;i<3;i++){for(j=0;j<3;j++){	     
+  if(switcha[i*3+j]==1){context.fillStyle = "#00ff00";}
+  else{context,fillStyle = "#000000";}
+  context.strokeRect(60*i+switchx,80*j+switchy,30,40);}}		    }
+
+function dispcol(p,c){
+ function ellipse(x,y,r,r){
+ context.beginPath();
+  context.arc(x,y,r,0,Math.PI*2,true);
+  context.fill();}
+ function drawLine(x0,y0,x1,y1){
+  context.beginPath();
+  context.moveTo(x0,y0);
+  context.lineTo(x1,y1);
+  context.stroke();}
+  context.fillStyle="#f0f0f0";
+  context.fillRect(p*5+ptrx,ptry,5,47);
+  context.strokeStyle = "#000000";
+ context.lineWidth = 0.5;
+ x=p*5+ptrx+2.5;
+ drawLine(x-2.5,ptry+2,x+2.5,ptry+2);
+ drawLine(x-2.5,ptry+46.6,x+2.5,ptry+46.6);
+ context.fillStyle = "#000000";
+ if((c&32)>0){ellipse(x,ptry+9.06,2.0,2.0);}
+ if((c&16)>0){ellipse(x,ptry+14.14,2.0,2.0);}
+ if((c&8)>0){ellipse(x,ptry+19.22,2.0,2.0);}
+ ellipse(x,ptry+24.3,1,1);
+ if((c&4)>0){ellipse(x,ptry+29.38,2.0,2.0);}
+ if((c&2)>0){ellipse(x,ptry+34.46,2.0,2.0);}
+ if((c&1)>0){ellipse(x,ptry+39.54,2.0,2.0);}}
+			    
+function dispregs() {
+ mask=[0x20000,0x10000,0x8000,0x4000,0x2000,0x1000,0x800,0x400,
+ 0x200,0x100,0x80,0x40,0x20,0x10,0x8,0x4,0x2,0x1];
+ function regsub (reg,i,j,y){
+  if((reg & mask[j])==0){context.fillStyle="#ffffff";}
+  else{context.fillStyle="#ee9a00";}
+  context.fillRect(i,y,8,8);
+  context.strokeStyle = "#00ff00";			    
+  context.strokeRect(i,y,8,8);}
+ for(i=20,j=0;i<=190;i=i+10,j=j+1){regsub(ir,i,j,260);}
+ for(i=270,j=7;i<=370;i=i+10,j=j+1){regsub(scc,i,j,260);}
+ for(i=20,j=0;i<=190;i=i+10,j=j+1){regsub(m0,i,j,274);}
+ for(i=20,j=0;i<=190;i=i+10,j=j+1){regsub(a0,i,j,288);}
+ for(i=20,j=0;i<=190;i=i+10,j=j+1){regsub(r0,i,j,302);}
+ for(i=200,j=0;i<=370;i=i+10,j=j+1){regsub(m1,i,j,274);}
+ for(i=200,j=0;i<=370;i=i+10,j=j+1){regsub(a1,i,j,288);}
+ for(i=200,j=0;i<=370;i=i+10,j=j+1){regsub(r1,i,j,302);}}		    
+
+function switchnames(){		  
+ context.font = "12px Courier";context.fillStyle="#000000";
+ context.fillText("Clear",switchx+15,switchy-12);
+ context.fillText("Start",switchx+15,switchy-2);
+ context.fillText("Init",switchx+15,switchy+68);
+ context.fillText("Load",switchx+15,switchy+78);
+ context.fillText("Place",switchx+15,switchy+148);
+ context.fillText("R0",switchx+15,switchy+158);
+ context.fillText("Init",switchx+75,switchy-12);
+ context.fillText("Start",switchx+75,switchy-2);
+ context.fillText("Free",switchx+75,switchy+68);
+ context.fillText("Run",switchx+75,switchy+78);
+ context.fillText("Place",switchx+75,switchy+148);
+ context.fillText("e1000",switchx+75,switchy+158);
+ context.fillText("Re-",switchx+135,switchy-12);
+ context.fillText("start",switchx+135,switchy-2);
+ context.fillText("Stop",switchx+135,switchy+73);
+ context.fillText("Place",switchx+135,switchy+148);
+ context.fillText("Tape",switchx+135,switchy+158);}
+
+function pagetest(){
+ for(i=0;i<20;i++){
+ page[i]="";for(j=i;j<i+60;j++){
+ page[i]=page[i].concat(char(j%10+48));}}    
+ disppage();}
+//pagetest();		      
+function tapetest(){
+ for (i=0;i<80;i++){dispcol(i,initr0[i+time]);}}
+//tapetest();
+			 
+function draw() {
+ context.strokeStyle = "#000000";
+ context.strokeRect(0,0,600,400);
+ dispswitch();
+ dispregs();
+ if(initstate>0){initload();}
+ else if(running==1){pc1loop();}
+ else if(switcha[0]+switcha[1]+switcha[2]+
+  switcha[3]+switcha[4]+switcha[5]+
+  switcha[6]+switcha[7]+switcha[8]>0){switcha=[0,0,0,0,0,0,0,0,0];}}
+
+function etrace() {}
+function monito(a){console.log(a);
+  context.font = "18px Courier";
+  context.clearRect(440,376,150,23);
+  context.fillStyle="#000000";
+  context.textAlign="center";
+  context.fillText(a,515,395);};
+function fetch(){
+ ir=mem[scc&0x1ff];f=ir>>12;ls=(ir>>11)&1;ad=ir&0x7ff;
+ if(e1000p && scc==103){monito(a1);}
+    if(pi1000p && scc==226){monito(a0);}
+ etrace();		 
+ scc++;}
+
+function pc1loop(){
+ for(i=0;((i<reptn)&& (running==1));i++){
+  fetch();
+ if(((0x231ce040>>f)&1)==1){  //memory get instructions
+  if(ls==1){ad=ad&0x3fe;m0=mem[ad&0x1ff];m1=mem[(ad+1)&0x1ff];}
+  else{m0=mem[ad&0x1ff];m1=0;}
+  switch(2*f+ls){
+ case 12: n();break; case 13: n();break; case 26: p();break;
+ case 27: p();break; case 28: c();break; case 29: c();break;
+ case 30: v();break; case 31: v();break; case 36: d();break;
+ case 37: d();break; case 38: b();break; case 39: b();break;
+ case 40: s();break; case 41: s();break; case 48: a();break;
+ case 49: a();break; case 50: w();break; case 51: w();break;
+ case 58: q();break; case 59: q();break;}}
+  else if(((0x44820602>>f)&1)==1) {
+ switch(2*f+ls){
+ case 2:  t();break; case 3:  tl();break; case 18: l();break;
+ case 19: ll();break; case 20: r();break; case 21: rl();break;
+ case 34: z();break; case 35: zl();break; case 46: xx();break;
+ case 53: jl();break; case 60: k();break; case 61: kl();break;}}
+  else if(f==3){o();}
+  else if(f==12){ii();}
+  else {running=0;draw();halt();}}}  //end pc1loop
+
+function enqtapename(){
+ enqtape=1;
+ context.clearRect(440,5,150,140);
+    context.fillStyle = "#f0f0f0";
+    context.fillRect(440,25,150,20);
+    context.fillRect(440,65,150,20);
+    context.fillRect(440,105,150,20);
+ context.strokeStyle = "#000000";
+ context.strokeRect(440,25,150,120);
+    
+    context.font = "16px Courier";
+ context.fillStyle = "#000000";
+ context.textAlign="center";
+ context.fillText("select tape",515,20);
+ context.fillText("factorize32",515,40);
+ context.fillText("eratosthenes",515,60);
+ context.fillText("v2test",515,80);
+ context.fillText("va1test",515,100);
+ context.fillText("pi1000cmp",515,120);
+ context.fillText("pi1000prt",515,140);
+}
+
+function readtape() {
+ if(tapei<tape.length){
+ ch=tape[tapei];
+ tapei++;
+ disptape(tapei,tape);
+ return ch;}
+ else{running=0;draw();halt();}}
+function initload(){
+ ch=readtape();
+ if(initstate==1) {if((0<ch)&&(ch<63)){initstate=2;}}
+ else if((1<initstate)&&(initstate<8)){         //2,3,4,5,6,7 
+  m0=((m0<<6)+(m1>>12))&0x3ffff;
+  m1=((m1<<6)+ch)&0x3ffff;dispregs();
+  initstate++;}
+ else if(initstate==8) {
+  mem[scc&0x1ff]=m0;
+  mem[(scc+1)&0x1ff]=m1;
+  scc=scc+2;  a0=a0^m0;  a1=a1^m1; dispregs();
+  if(ch==63) {halt();initstate=0;runready=false;stateready=false;dispregs();}
+  else{initstate=2;}}}
+
+function placer0(){
+ tape=initr0;disptape(0,tape);}
+
+function initstart(){scc=0;clearstart();}
+function clearstart(){fetch();freerun();}	    
+function freerun(){
+switcha[4]=1;
+ if(stateready){stateready=false;running=1;run();}
+ else{runready=true;}}
+    function placee1000(){e1000p=true;monito("e1000");
+ tape=preparetape(e1000);}
+function initstart(){scc=0;clearstart();}
+function clearstart(){fetch();restart();}
+function restart(){
+ if(runready){runready=false;running=1;run();}
+ else{stateready=true;}}
+function stop(){switcha[4]=0;stateready=false;runready=false;running=0;}
+var ss=0;
+function doKeyDown(evt){
+var ek=evt.keyCode;
+if (ek==13){console.log(mem[ss]+" "+mem[ss].toString(8));ss=0;}
+else{ss=ss*10+ek-48;}}	    
+function onMouseUp(event){
+ var x=event.clientX,y=event.clientY; }
+function onMouseDown(event){
+    var x=event.clientX,y=event.clientY-8;
+  for(i=0;i<3;i++){for(j=0;j<3;j++){	     
+   if(60*i+switchx<=x && x<60*i+switchx+30 &&
+   80*j+switchy<=y&&y<80*j+switchy+40){
+  switch(i*3+j){
+  case 0:clearstart();break;
+  case 1:scc=0;initstate=1;run();break;
+  case 2:tapei=0;placer0();break;		      
+  case 3:initstart();break;
+  case 4:freerun();break;
+  case 5:placee1000();break;
+  case 6:restart();break;
+  case 7:stop();break;
+  case 8:enqtapename();break;}}}
+  if((enqtape==1)&&(440<=x)&&(x<590)){
+      if((25<=y)&&(y<45)){resetenq();monito("factorize32");
+			  tape=preparetape(factorize31);}
+      if((45<=y)&&(y<65)){resetenq();monito("eratosthenes");
+			  tape=preparetape(erato);}
+      if((65<=y)&&(y<85)){resetenq();monito("v2test");
+			  tape=preparetape(v2test);}
+      if((85<=y)&&(y<105)){resetenq();monito("va1test");
+			   tape=preparetape(va1test);}
+      if((105<=y)&&(y<125)){resetenq();monito("pi1000cmp");
+			    pi1000p=true;tape=preparetape(pi1000cmp);}
+      if((125<=y)&&(y<145)){resetenq();monito("pi1000prt");
+			    tape=preparetape(pi1000prt);}}
+  if(260<=y&&y<316){
+  if(20<=x&&x<70){console.log("setn=1;");setn=1;}
+  if(70<=x&&x<120){console.log("setn=2;");setn=2;}
+  if(120<=x&&x<170){console.log("setn=3;");setn=3;}			    
+  if(170<=x&&x<220){console.log("setn=4;");setn=4;}}
+  if(ptry<=y&&y<ptry+47){
+  if(ptrx<=x&&x<ptrx+50){console.log("reptn=10;");reptn=10;}
+  if(ptrx+50<=x&&x<ptrx+100){console.log("reptn=20;");reptn=20;}}
+}}
+function resetenq(){
+ enqtape=0;e1000p=false;pi1000p=false;disptitle();}
+ function initialize()
+ {var canvas = document.getElementById("mycanvas");
+  canvas.addEventListener('mousedown', onMouseDown, false);
+  canvas.addEventListener('mouseup', onMouseUp, false);
+  window.addEventListener('keydown',doKeyDown,true);}
+initialize();draw();
+disptitle();
+switchnames();
+</script></body></html>
