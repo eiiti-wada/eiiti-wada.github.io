@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ja">
+ 
+<head>
+  <meta charset="utf-8">
+  <title>Visible Sort</title>
+  <style>
+canvas {
+  border: solid 1px #999;
+}
+  </style>
+</head>
+ 
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="500" height="500"></canvas> 
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+const seq20=[9,18,12,14,16,13,6,3,8,0,4,2,11,17,10,15,5,19,1,7];
+function newseq(){return structuredClone(seq20);}
+var seq=newseq();var seqs=[];var mode=-1;var i=0;var intervalID;
+
+function insertionsort(seq) {
+  var n = seq.length;seqs=[];
+  for(i=0;i<n;i++) {
+    var s=seq[i];
+    for (j=i-1;j>=0;j--) {
+      var t=seq[j];
+      if(t>s){seq[j]=s;
+	seq[j+1]=t;
+	seqs.push(structuredClone(seq));}
+      else{j=0};}}
+      return seq;}
+    
+function bubblesort(seq){
+  var n= seq.length;
+  for(i=n-1;i>0;i--){
+    for(j=0;j<i;j++){
+      var s=seq[j],t=seq[j+1];
+	if(s>t){seq[j+1]=s;seq[j]=t;
+          seqs.push(structuredClone(seq));}}}
+  return seq;}
+
+function quicksort(seq) {
+  function qsort(left,right) {
+    function swap(i,j) {
+      var t=seq[i];
+	seq[i]=seq[j];seq[j]=t;
+        seqs.push(structuredClone(seq));}
+      if(right-left>0){
+      var p=seq[left];var l=left+1; var r=right;
+      while(l<=r) {
+        while(l<=r && seq[l]<=p){l=l+1;}
+	while(l<=r && seq[r]>p) {r=r-1;}	
+        if (l<r){swap(l,r);}}
+      swap(left,r);
+      qsort(left,r-1);qsort(r+1,right);}}
+    qsort(0,seq.length-1);return seq;}
+
+ function heapsort(seq) {
+       function swap(i,j) {
+	   var t=seq[i];
+	   seq[i]=seq[j];seq[j]=t;
+           seqs.push(structuredClone(seq));}
+       for(end=seq.length-1;end>0;end--) {
+	   if(end%2==1 && seq[end]>seq[(end-1)/2]) {
+	     swap(end,(end-1)/2);}
+           for(start=Math.floor(end/2)-1;
+	       start>=0;start--){
+	     var l=start*2+1;var r=l+1;
+	     if(seq[l]>seq[r]) {
+		 if(seq[start]<seq[l]) {swap(l,start);}}
+             else{
+	       if(seq[start]<seq[r]) {swap(r,start);}}}
+	   swap(0,end);}
+       return seq;}
+
+    function mergesort (seq) {
+    function msort (rs) {
+    var n = rs.length;
+    var rt=new Array(n);
+    for(i=0;i<n;i++){rt[i]=-1;}
+	seqs.push(structuredClone([rs,rt]));
+    function move(l,i) {
+	rt[l]=rs[i];
+      seqs.push(structuredClone([rs,rt]));}
+    function less(a,b) {return rs[a]<rs[b];}
+    var i=0,j=n-1,k=0,l=n-1;
+    function toleft() {
+      function fromright() {
+        move(k,j);j=j-1;k=k+1;
+	  if (less(j,j+1)){toright();}else{fromright();}}
+      function fromleft() {
+        move(k,i);i=i+1;k=k+1;
+	  if(less(i-1,i)){fromleft();}else{toright();}}
+      if(i==j) {move(k,i);
+         if(k<n-1) {msort(rt);} else{seq=rt;}}
+      else if(less(i,j)) {move(k,i);i=i+1;k=k+1;
+         if(less(i-1,i)){toleft();} else{fromright();}}
+      else {move(k,j);j=j-1;k=k+1;
+         if(less(j,j+1)) {fromleft();}else{toleft();}} }
+    function toright() {
+      function fromright() {
+        move(l,j);j=j-1;l=l-1;
+        if(less(j,j+1)){toleft();}else{fromright();}}
+      function fromleft() {
+        move(l,i);i=i+1;l=l-1;
+	if(less(i-1,i)){fromleft();}else{toleft();}}
+      if(i==j) {move(l,i);msort(rt);}
+      else if (less(i,j)) {move(l,i);i=i+1;l=l-1;
+        if(less(i-1,i)) {toright();}else{fromright();}}
+      else {move(l,j);j=j-1;l=l-1;
+        if(less(j,j+1)) {fromleft();}else{toright();}}}
+      toleft();}
+    msort(seq);return seq;}
+
+    function drawseq(x,y,seq){
+	context.save();
+	context.translate(x,y);
+        context.strokeStyle="#000000";
+        context.strokeRect (0,0,400,-200);
+        context.fillStyle="#ff0000";
+	for (var j=0;j<20;j++) {if(seq[j]>=0){
+	    context.fillRect((j+0.2)*20,0,12,(seq[j]+0.5)*-10);}}
+	context.restore();}
+    var i=0;
+    function draw() {
+	context.clearRect(0,0,500,500);
+	context.strokeStyle="#000000";
+	context.strokeRect(50,410,100,40);
+	context.strokeRect(200,410,100,40);
+	context.strokeRect(350,410,100,40);
+	context.strokeRect(50,450,100,40);
+	context.strokeRect(200,450,100,40);
+	context.strokeRect(350,450,100,40);
+	context.font = "20px serif"
+        context.fillStyle="#000000";
+        context.textAlign = "center";
+        context.fillText("insertion",100,429);
+	context.fillText("sort",100,446);
+	context.fillText("bubble",250,429);
+	context.fillText("sort",250,446);
+	context.fillText("merge",400,429);
+	context.fillText("sort",400,446);
+	context.fillText("quick",100,469);
+	context.fillText("sort",100,486);
+	context.fillText("heap",250,469);
+	context.fillText("sort",250,486);
+	context.fillText("start",400,478);
+	if(mode==4){drawseq(50,200,seqs[i][0]);
+	    drawseq(50,400,seqs[i][1]);i=i+1;}
+	if(0<=mode && mode<4){drawseq(50,300,seqs[i]);i=i+1}
+	if(i==seqs.length){mode=-1;
+            clearInterval(intervalID);}}
+
+    function doKeyDown(evt){
+    ch=evt.keyCode-48;
+    console.log("ch="+ch);
+    clearInterval(intervalID);}
+
+    function getPosition(event)   {
+        var x = new Number();
+        var y = new Number();
+        var canvas = document.getElementById("mycanvas");
+        if (event.x != undefined && event.y != undefined) {
+          x = event.x;
+          y = event.y;
+        }
+        else {
+          x = event.clientX + document.body.scrollLeft +
+              document.documentElement.scrollLeft;
+          y = event.clientY + document.body.scrollTop +
+              document.documentElement.scrollTop;}
+        x -= canvas.offsetLeft;
+        y -= canvas.offsetTop;
+       x0=x;y0=y;    function xx(n){mode=n;seq=newseq();seqs=[];}
+       if(50<x&&x<150&&410<=y&&y<450){xx(0);seq=insertionsort(seq);seq=newseq();i=0;draw();}
+       if(200<x&&x<300&&410<=y&&y<450){xx(1);seq=bubblesort(seq);seq=newseq();i=0;draw();}
+       if(350<x&&x<450&&410<=y&&y<450){xx(4);seq=mergesort(seq);seq=newseq();i=0;draw();}
+       if(50<x&&x<150&&450<=y&&y<490){xx(2);seq=quicksort(seq);seq=newseq();i=0;draw();}
+       if(200<x&&x<300&&450<=y&&y<490){xx(3);seq=heapsort(seq);seq=newseq();i=0;draw();}
+       if(350<x&&x<450&&450<=y&&y<490){if(0<=mode&&mode<5){i=0;
+         intervalID=setInterval(draw,200);}}}
+       
+function initialize()
+ { var canvas = document.getElementById("mycanvas");
+   canvas.addEventListener("mousedown", getPosition, false);
+   window.addEventListener('keydown',doKeyDown,true);}
+    initialize();draw();
+//var intervalID=setInterval(draw,1000);
+</script>
+</body>
+</html>
