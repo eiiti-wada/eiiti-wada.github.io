@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Visible Sort</title>
+  <style>
+canvas {
+  border: solid 1px #999;}
+  </style>
+</head>
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="500" height="500"></canvas> 
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+const seq20=[9,18,12,14,16,13,6,3,8,0,4,2,11,17,10,15,5,19,1,7];
+function newseq(){return structuredClone(seq20);}
+var seq=newseq();var seqs=[];var mode=-1;var i=0;var intervalID;
+async function insertionsort(seq) {
+  var n = seq.length;seqs=[];
+  for(i=1;i<n;i++)  {
+//      draw(seq,i,j); await sleep(400);
+    var s=seq[i];
+    for (j=i-1;j>=0;j--) {
+	draw(seq,i,j); await sleep(400);
+	var t=seq[j];
+	draw(seq,i,j); await sleep(400);
+	if(t>s) {seq[j]=s;
+	seq[j+1]=t;
+		 draw(seq,i,j); await sleep(400);}
+	else {j=-2;
+              draw(seq,i,j); await sleep(1000);}      }  };
+      draw(seq,i,j); await sleep(500); }
+async function bubblesort(seq){
+  var n= seq.length;
+  for(i=n-1;i>0;i--){
+    for(j=0;j<i;j++){
+	draw(seq,i,j); await sleep(400);
+	var s=seq[j],t=seq[j+1];
+	if(s>t){seq[j+1]=s;seq[j]=t;
+		draw(seq,i,j); await sleep(400); }}}
+    i=-1;j=-2;draw(seq,i,j); await sleep(400);}
+
+    function sleep(msec){
+    return new Promise(resolve => setTimeout(resolve, msec));}
+function drawseq(x,y,seq,i,j) {
+    context.save();
+    context.translate(x,y);
+    context.strokeStyle="#000000";
+    context.strokeRect (0,0,400,-240);
+    context.fillStyle="#00008b";
+    for (var k=0;k<20;k++) {
+        if(i<=19&&i>=0){context.fillRect((i+0.2)*20,10,12,12);}
+        if(j>=0){context.fillRect((j+0.2)*20,30,12,12);}
+	context.fillRect((k+0.2)*20,(k==j||k==j+1)?-40:0,12,-10*seq[k]-5);}
+	context.restore();}
+    function draw(seq,i,j) {
+    context.clearRect(0,0,500,500);
+	context.strokeRect(50,450,100,40);
+	context.strokeRect(200,450,100,40);
+	context.strokeRect(350,450,100,40);
+	context.font = "20px serif"
+        context.fillStyle="#000000";
+        context.textAlign = "center";
+        context.fillText("insertion",100,469);
+	context.fillText("sort",100,486);
+	context.fillText("bubble",250,469);
+	context.fillText("sort",250,486);
+	context.fillText("start",400,478);
+        context.textAlign = "left";
+	if(mode==0){context.fillText("insertion sort",50,50);}
+	if(mode==1){context.fillText("bubble sort",50,50);}
+	drawseq(50,300,seq,i,j);}
+function doKeyDown(evt) {
+    ch=evt.keyCode-48;
+    console.log("ch="+ch);
+    clearInterval(intervalID);}
+function getPosition(event)   {
+    var x = new Number();
+    var y = new Number();
+    var canvas = document.getElementById("mycanvas");
+    if (event.x != undefined && event.y != undefined) {
+        x = event.x;
+        y = event.y;}
+    else {
+        x = event.clientX + document.body.scrollLeft +
+            document.documentElement.scrollLeft;
+        y = event.clientY + document.body.scrollTop +
+            document.documentElement.scrollTop;}
+        x -= canvas.offsetLeft;
+        y -= canvas.offsetTop;
+    x0=x;y0=y;
+    if(50<x&&x<150&&450<=y&&y<490) {mode=0;seq=newseq();draw(seq,-1,-2);}   
+    if(200<x&&x<300&&450<=y&&y<490) {mode=1;seq=newseq();draw(seq,-1,-2);}
+    if(350<x&&x<450&&450<=y&&y<490) {
+	if(mode==0) {insertionsort(seq); }
+	if(mode==1) {bubblesort(seq); }}}
+function initialize()  {
+    var canvas = document.getElementById("mycanvas");
+    canvas.addEventListener("mousedown", getPosition, false);
+    window.addEventListener('keydown',doKeyDown,true);}
+    initialize();draw(seq,-1,-2);
+</script>
+</body>
+</html>
+
