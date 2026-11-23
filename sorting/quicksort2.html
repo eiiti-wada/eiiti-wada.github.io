@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+  <head> <title>Quick Sort</title> </head>
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="500" height="500"></canvas> 
+<script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+context.textAlign="center";
+  function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));}
+
+  async function quicksort(ls) {
+      ps=[];
+      async function qsort(l,r) {			
+      async function swap(i,j) {
+        t=ls[i];ls[i]=ls[j];ls[j]=t;
+          await draw(ls,l,r,i,j,ps,[i,j]);await sleep(500);}
+	console.log('qsort',l,r,ls);
+	if (r-l==1) {await draw(ls,l,r,i,j,ps,[]);await sleep(500);
+	    if (ls[l]>ls[r]) {swap(l,r);}
+          ps.push(l);ps.push(r);
+      await draw(ls,l,r,i,j,ps,[]);await sleep(500);}
+      else if (r-l>1) {
+        var p=ls[l];var i=l+1;var j=r;
+	  await draw(ls,l,r,i,j,ps,[]);await sleep(500);
+	while (i<j) {		
+	  while (i<j & ls[i]<=p){i=i+1;
+	 await draw(ls,l,r,i,j,ps,[]);await sleep(500);}
+            while (i<=j & p<ls[j]) {j=j-1;
+	    await draw(ls,l,r,i,j,ps,[]);await sleep(500);}
+            if(i<j){await swap(i,j);}}
+          await swap(l,j);console.log('j',j,l,j-1,j+1,r);ps.push(j);
+	  await draw(ls,l,r,i,j,ps,[]);await sleep(500);
+          if(j-l>1){await qsort(l,j-1,i,j);}
+          if(r-j>1){await qsort(j+1,r,i,j);}}
+    }
+    qsort(0,ls.length-1);return ls;}
+
+  function draw(ls,l,r,i,j,ps,ss){
+        //console.log("left",l,"right",r,"i",i,"j",j);
+	context.clearRect(0,0,400,400);
+        context.strokeStyle="#000000";
+	context.strokeRect(0,0,400,400);
+        context.moveTo(50,150);
+	context.lineTo(350,150);
+	context.lineTo(350,120);
+	context.lineTo(50,120);
+	context.closePath();
+	for(k=80;k<=320;k=k+30){
+	    context.moveTo(k,150);
+	    context.lineTo(k,120);}
+	context.stroke();
+	context.font = "30px Courier";
+	
+	for(k=0;k<10;k++){
+         if(ps.includes(k)){context.fillStyle="#ff0000";}
+         else if(ss.includes(k)){context.fillStyle="#00ff00";}
+         else {context.fillStyle="#000000";}
+           context.fillText(ls[k],65+30*k,145);}
+	context.font = "30px Courier";
+	context.fillStyle="#000000";
+	context.fillText("l",l*30+65,190);
+	context.fillText("r",r*30+65,190);
+	context.fillText("i",i*30+((i==j)?55:65),170);
+	context.fillText("j",j*30+((i==j)?75:65),170);	
+    }
+quicksort([3,9,0,4,2,7,8,1,6,5]);
+</script></body></html>
