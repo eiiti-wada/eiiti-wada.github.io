@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>Bubble Sort</title>
+  <style>
+canvas {
+  border: solid 1px #999;}
+  </style>
+</head>
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="500" height="500"></canvas> 
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+const seq20=[9,18,12,14,16,13,6,3,8,0,4,2,11,17,10,15,5,19,1,7];
+context.textAlign="center";
+function newseq(){return structuredClone(seq20);}
+var seq=newseq();var seqs=[];var mode=-1;var i=0;var intervalID;
+async function bubblesort(seq){
+  var i= seq.length-1
+    while (i>1){
+      k=0
+      for(j=0;j<i;j++){
+        draw(seq,i,j,k); await sleep(500);
+	var s=seq[j],t=seq[j+1];
+        if(s>t){seq[j+1]=s;seq[j]=t;k=j;}
+	   draw(seq,i,j,k); await sleep(500); }
+		i=k;}
+    i=-1;j=-2;draw(seq,i,j,k); await sleep(500);} 
+function sleep(msec){
+    return new Promise(resolve => setTimeout(resolve, msec));}
+function drawseq(x,y,seq,i,j,k) {
+    context.save();
+    context.translate(x,y);
+    context.strokeStyle="#000000";
+    context.strokeRect (0,0,400,-240);
+    context.fillStyle="#00008b";
+    for (var l=0;l<20;l++) {
+      context.fillRect((l+0.2)*20,0,12,-10*seq[l]-5);}
+    context.font = "30px serif";
+    context.textAlign = "center";
+    if(i<=19&&i>=0) {context.fillText("i",(i+0.5)*20,30);}
+	if (0<=j) {context.fillText("j",(j+0.5)*20,55);}
+	if (0<=k) {context.fillText("k",(k+0.5)*20,80);}
+			    context.restore();}
+    function draw(seq,i,j,k) {
+    context.clearRect(0,0,500,500);
+	drawseq(50,300,seq,i,j,k);}
+    draw(seq,-1,-2);bubblesort(seq);
+</script>
+</body>
+</html>
+
