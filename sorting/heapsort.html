@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="ja">
+ <head>
+  <meta charset="utf-8">
+  <title>Heap Sort</title>
+  <style>
+canvas {
+  border: solid 1px #999;
+}
+</style></head>
+<body>
+  <a onclick="initialize()">
+  <canvas id="mycanvas" width="400" height="400"></canvas> 
+  <script>
+var canvas = document.getElementById("mycanvas");
+var context = canvas.getContext("2d");
+    var d=20;
+    context.textAlign="center";
+    //ls=[3,9,0,4,2,7,8,1,6,5];
+function sleep(msec) {
+    return new Promise(resolve => setTimeout(resolve, msec));}
+async function heapsort(ls) {
+    ends=[];n=ls.length;r=n-1;
+    async function swap(i,j) {
+    	var t=ls[i];ls[i]=ls[j];ls[j]=t;
+        await draw(ls,ends,[i,j],[],[]);await sleep(500);
+    }//end swap
+    async function swap2(i,j) {
+    	var t=ls[i];ls[i]=ls[j];ls[j]=t;
+        await draw(ls,ends,[],[],[i,j]);await sleep(500);
+    }//end swap2
+    async function comp(i,j) {
+        var tf=ls[i]<ls[j];
+	await draw(ls,ends,[],[i,j],[]);await sleep(500);
+        return tf;} //end comp
+    async function sift(l,r) {
+	var i=l,j=i*2+1;
+	while (j<=r){
+	    if(j+1<=r){tf=await comp(j,j+1);//sleep(500);
+		      if(tf){j=j+1;}}
+	    tf=await comp(i,j);//sleep(500);
+	    if(tf){await swap(i,j);}//await sleep(500);
+	    i=j;j=i*2+1;}}
+    for(l=Math.floor(n/2)-1;l>=0;l--) {
+	await sift(l,r);//await sleep(500);
+	//console.log(structuredClone(ls));
+        await draw(ls,ends,[],[],[]);await sleep(500);}
+    await swap2(0,n-1);ends.push(n-1);await sleep(500);
+    //console.log(structuredClone(ls));
+    await draw(ls,ends,[],[],[]);await sleep(500);
+    for(r=n-2;r>=0;r--){await sift(0,r);await sleep(500);
+		       await swap2(0,r);await sleep(500);
+		       ends.push(r);
+		       //console.log(structuredClone(ls));
+			await draw(ls,ends,[],[],[]);}
+    return ls;}
+    heapsort([3,9,0,4,2,7,8,1,6,5]);
+    function draw(ls,r,o,g,b) {
+    context.clearRect(0,0,400,400);
+	function box(x,y){
+	context.strokeStyle="#000000";
+	context.strokeRect(x-0.8*d,y-0.8*d,1.6*d,1.6*d);}
+        function link(x0,x1,y){
+	    dx=(x1-x0)/5;
+	    context.moveTo((x0+dx)*d+60,(y+3.2)*d+60);
+	    context.lineTo((x1-dx)*d+60,(y+0.8)*d+60);}
+        for(i=0;i<10;i++){
+	    box([7,3,11,1,5,9,13,0,2,4][i]*d+60,
+ 		[1,5,5,9,9,9,9,13,13,13][i]*d+60);}
+        for(i=0;i<9;i++){
+            link([3,11,1,5,9,13,0,2,4][i],
+		 [7,7,3,3,11,11,1,1,5][i],
+		 [1,1,5,5,5,5,9,9,9][i]);}
+	context.stroke();
+	context.font = "20px Courier";
+	for(i=0;i<10;i++){
+	    context.fillStyle="#000000";
+	    context.fillText(i,
+	     [7,3,11,1,5,9,13,0,2,4][i]*d+60,
+	     [1,5,5,9,9,9,9,13,13,13][i]*d+95);}
+	context.font = "30px Courier";
+	for(i=0;i<10;i++){
+	    context.fillStyle="#000000";
+	    if(r.includes(i)){context.fillStyle="#ff0000";}
+	    if(o.includes(i)){context.fillStyle="#ffa500";}
+	    if(g.includes(i)){context.fillStyle="#00ff00";}	    
+	    if(b.includes(i)){context.fillStyle="#0000ff";}
+	    context.fillText(ls[i],
+	     [7,3,11,1,5,9,13,0,2,4][i]*d+60,
+	     [1,5,5,9,9,9,9,13,13,13][i]*d+70);}}
+</script></body></html>
